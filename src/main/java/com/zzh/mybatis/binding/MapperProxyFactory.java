@@ -1,5 +1,7 @@
 package com.zzh.mybatis.binding;
 
+import com.zzh.mybatis.session.SqlSession;
+
 import java.lang.reflect.Proxy;
 import java.util.Map;
 
@@ -15,7 +17,7 @@ public class MapperProxyFactory<T> {
         this.mapperInterface = mapperInterface;
     }
 
-    public T newInstance(Map<String, Object> sqlSession) {
+    public T newInstance(SqlSession sqlSession) {
         final MapperProxy<T> mapperProxy = new MapperProxy<>(sqlSession, mapperInterface);
         /*
          * mapperInterface.getClassLoader(): 指定加载代理对象的类加载器
