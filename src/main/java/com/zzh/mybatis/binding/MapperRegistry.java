@@ -1,6 +1,7 @@
 package com.zzh.mybatis.binding;
 
 import cn.hutool.core.lang.ClassScanner;
+import com.zzh.mybatis.session.Configuration;
 import com.zzh.mybatis.session.SqlSession;
 
 import java.util.HashMap;
@@ -12,11 +13,17 @@ import java.util.Set;
  * @description: 映射器注册机
  */
 public class MapperRegistry {
+    
+    private Configuration config;
 
     /**
      * 将已添加的映射器代理加入到 HashMap
      */
     private final Map<Class<?>, MapperProxyFactory<?>> knownMappers = new HashMap<>();
+
+    public MapperRegistry(Configuration config) {
+        this.config = config;
+    }
     
     public <T> T getMapper(Class<T> type, SqlSession sqlSession) {
         final MapperProxyFactory<T> mapperProxyFactory = 

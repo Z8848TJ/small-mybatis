@@ -3,7 +3,6 @@ package com.zzh.mybatis.binding;
 import com.zzh.mybatis.session.SqlSession;
 
 import java.lang.reflect.Proxy;
-import java.util.Map;
 
 /**
  * @author: zzh
