@@ -1,6 +1,7 @@
 package com.zzh.mybatis.builder;
 
 import com.zzh.mybatis.session.Configuration;
+import com.zzh.mybatis.type.TypeAliasRegistry;
 
 /**
  * @author: zzh
@@ -10,8 +11,10 @@ public abstract class BaseBuilder {
 
     protected final Configuration configuration;
 
+    protected final TypeAliasRegistry typeAliasRegistry;
     public BaseBuilder(Configuration configuration) {
         this.configuration = configuration;
+        this.typeAliasRegistry = this.configuration.getTypeAliasRegistry();
     }
 
     public Configuration getConfiguration() {

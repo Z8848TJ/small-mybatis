@@ -1,7 +1,5 @@
 package com.zzh.mybatis.mapping;
 
-import org.omg.CORBA.UNKNOWN;
-
 /**
  * @author: zzh
  * @description: SQL 指令类型
