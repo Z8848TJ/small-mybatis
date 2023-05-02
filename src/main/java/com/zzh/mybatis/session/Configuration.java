@@ -2,6 +2,8 @@ package com.zzh.mybatis.session;
 
 import com.zzh.mybatis.binding.MapperRegistry;
 import com.zzh.mybatis.datasource.druid.DruidSourceFactory;
+import com.zzh.mybatis.datasource.pooled.PooledDataSourceFactory;
+import com.zzh.mybatis.datasource.unpooled.UnpooledDataSourceFactory;
 import com.zzh.mybatis.mapping.Environment;
 import com.zzh.mybatis.mapping.MappedStatement;
 import com.zzh.mybatis.transaction.jdbc.JdbcTransactionFactory;
@@ -46,6 +48,12 @@ public class Configuration {
         
         typeAliasRegistry.registerAlias("DRUID", DruidSourceFactory.class);
         logger.debug("将 Druid 数据源工厂注册到类型别名注册器");
+
+        typeAliasRegistry.registerAlias("UNPOOLED", UnpooledDataSourceFactory.class);
+        logger.debug("将 无池化 数据源工厂注册到类型别名注册器");
+        
+        typeAliasRegistry.registerAlias("POOLED", PooledDataSourceFactory.class);
+        logger.debug("将 有池化 数据源工厂注册到类型别名注册器");
     }
 
     public void addMappers(String packageName) {
