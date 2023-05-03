@@ -8,7 +8,7 @@ import java.util.Properties;
 
 /**
  * @author: zzh
- * @description: 
+ * @description: Druid 数据源工厂
  */
 public class DruidSourceFactory implements DataSourceFactory {
     private Properties props;

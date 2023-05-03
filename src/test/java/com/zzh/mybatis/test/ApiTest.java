@@ -59,7 +59,6 @@ public class ApiTest {
             User user = userDao.queryUserInfoById(1L);
             logger.info("{}-测试结果：{}", i, JSON.toJSONString(user));
         }
-
         
     }
 

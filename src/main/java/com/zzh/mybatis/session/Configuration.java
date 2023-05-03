@@ -4,8 +4,16 @@ import com.zzh.mybatis.binding.MapperRegistry;
 import com.zzh.mybatis.datasource.druid.DruidSourceFactory;
 import com.zzh.mybatis.datasource.pooled.PooledDataSourceFactory;
 import com.zzh.mybatis.datasource.unpooled.UnpooledDataSourceFactory;
+import com.zzh.mybatis.executor.Executor;
+import com.zzh.mybatis.executor.SimpleExecutor;
+import com.zzh.mybatis.executor.resultset.DefaultResultSetHandler;
+import com.zzh.mybatis.executor.resultset.ResultSetHandler;
+import com.zzh.mybatis.executor.statement.PreparedStatementHandler;
+import com.zzh.mybatis.executor.statement.StatementHandler;
+import com.zzh.mybatis.mapping.BoundSql;
 import com.zzh.mybatis.mapping.Environment;
 import com.zzh.mybatis.mapping.MappedStatement;
+import com.zzh.mybatis.transaction.Transaction;
 import com.zzh.mybatis.transaction.jdbc.JdbcTransactionFactory;
 import com.zzh.mybatis.type.TypeAliasRegistry;
 import org.slf4j.Logger;
@@ -90,5 +98,26 @@ public class Configuration {
 
     public void setEnvironment(Environment environment) {
         this.environment = environment;
+    }
+
+    /**
+     * 创建结果集处理器
+     */
+    public ResultSetHandler newResultSetHandler(Executor executor, MappedStatement mappedStatement, BoundSql boundSql) {
+        return new DefaultResultSetHandler(executor, mappedStatement, boundSql);
+    }
+
+    /**
+     * 生产执行器
+     */
+    public Executor newExecutor(Transaction transaction) {
+        return new SimpleExecutor(this, transaction);
+    }
+
+    /**
+     * 创建语句处理器
+     */
+    public StatementHandler newStatementHandler(Executor executor, MappedStatement mappedStatement, Object parameter, ResultHandler resultHandler, BoundSql boundSql) {
+        return new PreparedStatementHandler(executor, mappedStatement, parameter, resultHandler, boundSql);
     }
 }
