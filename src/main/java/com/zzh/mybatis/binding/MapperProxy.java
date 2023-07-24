@@ -32,7 +32,7 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
      *
      * @param args 被代理对象要执行方法的参数
      *
-     * @return 代理对象
+     * @return 代理方法的返回值
      */
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
