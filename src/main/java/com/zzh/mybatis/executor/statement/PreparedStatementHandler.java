@@ -4,6 +4,7 @@ import com.zzh.mybatis.executor.Executor;
 import com.zzh.mybatis.mapping.BoundSql;
 import com.zzh.mybatis.mapping.MappedStatement;
 import com.zzh.mybatis.session.ResultHandler;
+import com.zzh.mybatis.session.RowBounds;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,9 +17,10 @@ import java.util.List;
  * @description: 预处理语句处理器（PREPARED）
  */
 public class PreparedStatementHandler extends BaseStatementHandler{
-    
-    public PreparedStatementHandler(Executor executor, MappedStatement mappedStatement, Object parameterObject, ResultHandler resultHandler, BoundSql boundSql) {
-        super(executor, mappedStatement, parameterObject, resultHandler, boundSql);
+
+    public PreparedStatementHandler(Executor executor, MappedStatement mappedStatement, Object parameterObject, 
+                                    RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
+        super(executor, mappedStatement, parameterObject, rowBounds, resultHandler, boundSql);
     }
 
     @Override
@@ -29,8 +31,7 @@ public class PreparedStatementHandler extends BaseStatementHandler{
 
     @Override
     public void parameterize(Statement statement) throws SQLException {
-        PreparedStatement ps = (PreparedStatement) statement;
-        ps.setLong(1, Long.parseLong(((Object[]) parameterObject)[0].toString()));
+        parameterHandler.setParameters((PreparedStatement) statement);
     }
 
     @Override

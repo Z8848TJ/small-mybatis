@@ -5,6 +5,7 @@ import com.zzh.mybatis.mapping.BoundSql;
 import com.zzh.mybatis.mapping.MappedStatement;
 import com.zzh.mybatis.session.Configuration;
 import com.zzh.mybatis.session.ResultHandler;
+import com.zzh.mybatis.session.RowBounds;
 import com.zzh.mybatis.transaction.Transaction;
 
 import java.sql.Connection;
@@ -23,11 +24,11 @@ public class SimpleExecutor extends BaseExecutor{
     }
 
     @Override
-    protected <E> List<E> doQuery(MappedStatement ms, Object parameter, ResultHandler resultHandler, BoundSql boundSql) {
+    protected <E> List<E> doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
         try {
             Configuration configuration = ms.getConfiguration();
             // 创建 StatementHandler，内部对 ResultHandler 进行了初始化
-            StatementHandler handler = configuration.newStatementHandler(this, ms, parameter, resultHandler, boundSql);
+            StatementHandler handler = configuration.newStatementHandler(this, ms, parameter, rowBounds, resultHandler, boundSql);
             // 创建连接
             Connection connection = transaction.getConnection();
             // 根据 connection 创建 statement

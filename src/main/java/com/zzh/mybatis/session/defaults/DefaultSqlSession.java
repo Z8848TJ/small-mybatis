@@ -1,10 +1,12 @@
 package com.zzh.mybatis.session.defaults;
 
+import com.alibaba.fastjson.JSON;
 import com.zzh.mybatis.executor.Executor;
 import com.zzh.mybatis.mapping.BoundSql;
 import com.zzh.mybatis.mapping.Environment;
 import com.zzh.mybatis.mapping.MappedStatement;
 import com.zzh.mybatis.session.Configuration;
+import com.zzh.mybatis.session.RowBounds;
 import com.zzh.mybatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,10 +64,10 @@ public class DefaultSqlSession implements SqlSession {
 
     @Override
     public <T> T selectOne(String statement, Object parameter) {
-        logger.debug("执行代理 ==> 方法名: {}, 参数: {}", statement, parameter);
+        logger.info("执行查询 statement：{} parameter：{}", statement, JSON.toJSONString(parameter));
         MappedStatement mappedStatement = configuration.getMappedStatement(statement);
-        List<T> list = executor.query(mappedStatement, parameter,
-                Executor.NO_RESULT_HANDLER, mappedStatement.getBoundSql());
+        List<T> list = executor.query(mappedStatement, parameter, RowBounds.DEFAULT,
+                Executor.NO_RESULT_HANDLER, mappedStatement.getSqlSource().getBoundSql(parameter));
         
         return list.get(0);
     }

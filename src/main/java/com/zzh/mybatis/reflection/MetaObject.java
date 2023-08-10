@@ -1,11 +1,8 @@
 package com.zzh.mybatis.reflection;
 
-import cn.hutool.core.map.MapWrapper;
 import com.zzh.mybatis.reflection.factory.ObjectFactory;
 import com.zzh.mybatis.reflection.property.PropertyTokenizer;
-import com.zzh.mybatis.reflection.wrapper.BeanWrapper;
-import com.zzh.mybatis.reflection.wrapper.ObjectWrapper;
-import com.zzh.mybatis.reflection.wrapper.ObjectWrapperFactory;
+import com.zzh.mybatis.reflection.wrapper.*;
 
 import java.util.Collection;
 import java.util.List;

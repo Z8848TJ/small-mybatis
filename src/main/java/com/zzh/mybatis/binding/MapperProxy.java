@@ -1,6 +1,9 @@
 package com.zzh.mybatis.binding;
 
+import com.zzh.mybatis.builder.xml.XMLConfigBuilder;
 import com.zzh.mybatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
@@ -12,6 +15,8 @@ import java.util.Map;
  * @description: 映射器代理类
  */
 public class MapperProxy<T> implements InvocationHandler, Serializable {
+
+    private final Logger logger = LoggerFactory.getLogger(MapperProxy.class);
     private static final long serialVersionUID = -6424540398559729838L;
 
     private final SqlSession sqlSession;
@@ -39,6 +44,7 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
         if (Object.class.equals(method.getDeclaringClass())) {
             return method.invoke(this, args);
         } else {
+            logger.info("开始执行代理方法");
             final MapperMethod mapperMethod = cachedMapperMethod(method);
             return mapperMethod.execute(sqlSession, args);
         }

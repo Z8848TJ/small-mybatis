@@ -1,8 +1,11 @@
 package com.zzh.mybatis.binding;
 
 import cn.hutool.core.lang.ClassScanner;
+import com.zzh.mybatis.builder.xml.XMLConfigBuilder;
 import com.zzh.mybatis.session.Configuration;
 import com.zzh.mybatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,7 +16,7 @@ import java.util.Set;
  * @description: 映射器注册机
  */
 public class MapperRegistry {
-    
+    private final Logger logger = LoggerFactory.getLogger(MapperRegistry.class);
     private Configuration config;
 
     /**
@@ -34,6 +37,7 @@ public class MapperRegistry {
         }
 
         try {
+            logger.info("创建接口代理对象");
             return mapperProxyFactory.newInstance(sqlSession);
         } catch (Exception e) {
             throw new RuntimeException("Error getting mapper instance. Cause: " + e, e);

@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
 
 import javax.sql.DataSource;
+import java.io.InputStream;
 import java.io.Reader;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -80,6 +81,7 @@ public class XMLConfigBuilder extends BaseBuilder {
      *     </environments>
      */
     private void environmentsElement(Element context) throws Exception {
+        logger.info("开始解析环境配置");
         String environment = context.attributeValue("default");
         logger.debug("默认环境名 ==> {}", environment);
         
@@ -90,14 +92,17 @@ public class XMLConfigBuilder extends BaseBuilder {
             
             if(environment.equals(id)) {
                 // 通过反射，创建事务管理器
+                logger.info("解析 transactionManager 标签，创建事务管理器工厂");
                 TransactionFactory txFactory = (TransactionFactory)typeAliasRegistry.
                         resolveAlias(e.element("transactionManager").attributeValue("type")).newInstance();
 
                 // 数据源
+                logger.info("解析 dataSource 标签, 创建数据源工厂");
                 Element dataSourceElement = e.element("dataSource");
                 DataSourceFactory dataSourceFactory = (DataSourceFactory) typeAliasRegistry.
                         resolveAlias(dataSourceElement.attributeValue("type")).newInstance();
 
+                logger.info("解析 property，获取数据库连接属性");
                 List<Element> propertyList = dataSourceElement.elements("property");
                 Properties props = new Properties();
                 for(Element property : propertyList) {
@@ -106,80 +111,94 @@ public class XMLConfigBuilder extends BaseBuilder {
 
                 dataSourceFactory.setProperties(props);
 
+                logger.info("通过数据源工厂创建数据源");
                 DataSource dataSource = dataSourceFactory.getDataSource();
 
+                logger.info("构建 environment 对象，记录事务管理器工厂和数据源");
                 // 构建环境
                 Environment.Builder environmentBuilder = new Environment.Builder(id)
                         .transactionFactory(txFactory)
                         .dataSource(dataSource);
-                
+
+                logger.info("将 environment 对象，装配到 configuration 对象");
                 configuration.setEnvironment(environmentBuilder.build());
             }
         }
     }
 
     private void mapperElement(Element mappers) throws Exception {
+
         List<Element> mapperList = mappers.elements("mapper");
         for (Element e : mapperList) {
             String resource = e.attributeValue("resource");
             // 加载 Mapper.xml
-            Reader reader = Resources.getResourceAsReader(resource);
+            InputStream inputStream = Resources.getResourceAsStream(resource);
 
-            SAXReader saxReader = new SAXReader();
-            Document document = saxReader.read(new InputSource(reader));
-            Element root = document.getRootElement();
-
-            logger.debug("mapper 配置文件根元素 {}", root.getName());
-
-            //命名空间
-            String namespace = root.attributeValue("namespace");
-
-            logger.debug("mapper 配置文件 namespace {}", namespace);
-
-            // SELECT 标签
-            List<Element> selectNodes = root.elements("select");
-
-            for (Element node : selectNodes) {
-                String id = node.attributeValue("id");
-                String parameterType = node.attributeValue("parameterType");
-                String resultType = node.attributeValue("resultType");
-                String sql = node.getText();
-
-                logger.debug("select 标签 id：{}, parameterType：{}， resultType：{}，原始 sql：{}", 
-                        id, parameterType, resultType, sql);
-
-                // ? 匹配
-                Map<Integer, String> parameter = new HashMap<>();
-                Pattern pattern = Pattern.compile("(#\\{(.*?)})");
-                Matcher matcher = pattern.matcher(sql);
-                for (int i = 1; matcher.find(); i++) {
-                    String g1 = matcher.group(1);
-                    String g2 = matcher.group(2);
-
-                    logger.debug("select 标签 g1：{}, g2：{}", g1, g2);
-                    parameter.put(i, g2);
-                    sql = sql.replace(g1, "?");
-                    logger.debug("解析后的 SQL {}", sql);
-                }
-                
-                // 组装全路径方法名
-                String msId = namespace + "." + id;
-                // 
-                String nodeName = node.getName();
-                SqlCommandType sqlCommandType = SqlCommandType.valueOf(nodeName.toUpperCase(Locale.ENGLISH));
-
-                BoundSql boundSql = new BoundSql(sql, parameter, parameterType, resultType);
-                
-                MappedStatement mappedStatement = new MappedStatement.
-                        Builder(configuration, msId, sqlCommandType, boundSql).build();
-                
-                // 添加解析 SQL
-                configuration.addMappedStatement(mappedStatement);
-            }
-
-            // 添加 Mapper 映射器
-            configuration.addMapper(Resources.classForName(namespace));
+            // 在for循环里每个mapper都重新new一个XMLMapperBuilder，来解析
+            XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, resource);
+            mapperParser.parse();
         }
+        
+//        List<Element> mapperList = mappers.elements("mapper");
+//        for (Element e : mapperList) {
+//            String resource = e.attributeValue("resource");
+//            // 加载 Mapper.xml
+//            Reader reader = Resources.getResourceAsReader(resource);
+//
+//            SAXReader saxReader = new SAXReader();
+//            Document document = saxReader.read(new InputSource(reader));
+//            Element root = document.getRootElement();
+//
+//            logger.debug("mapper 配置文件根元素 {}", root.getName());
+//
+//            //命名空间
+//            String namespace = root.attributeValue("namespace");
+//
+//            logger.debug("mapper 配置文件 namespace {}", namespace);
+//
+//            // SELECT 标签
+//            List<Element> selectNodes = root.elements("select");
+//
+//            for (Element node : selectNodes) {
+//                String id = node.attributeValue("id");
+//                String parameterType = node.attributeValue("parameterType");
+//                String resultType = node.attributeValue("resultType");
+//                String sql = node.getText();
+//
+//                logger.debug("select 标签 id：{}, parameterType：{}， resultType：{}，原始 sql：{}", 
+//                        id, parameterType, resultType, sql);
+//
+//                // ? 匹配
+//                Map<Integer, String> parameter = new HashMap<>();
+//                Pattern pattern = Pattern.compile("(#\\{(.*?)})");
+//                Matcher matcher = pattern.matcher(sql);
+//                for (int i = 1; matcher.find(); i++) {
+//                    String g1 = matcher.group(1);
+//                    String g2 = matcher.group(2);
+//
+//                    logger.debug("select 标签 g1：{}, g2：{}", g1, g2);
+//                    parameter.put(i, g2);
+//                    sql = sql.replace(g1, "?");
+//                    logger.debug("解析后的 SQL {}", sql);
+//                }
+//                
+//                // 组装全路径方法名
+//                String msId = namespace + "." + id;
+//                // 
+//                String nodeName = node.getName();
+//                SqlCommandType sqlCommandType = SqlCommandType.valueOf(nodeName.toUpperCase(Locale.ENGLISH));
+//
+//                BoundSql boundSql = new BoundSql(sql, parameter, parameterType, resultType);
+//                
+//                MappedStatement mappedStatement = new MappedStatement.
+//                        Builder(configuration, msId, sqlCommandType, boundSql).build();
+//                
+//                // 添加解析 SQL
+//                configuration.addMappedStatement(mappedStatement);
+//            }
+//
+//            // 添加 Mapper 映射器
+//            configuration.addMapper(Resources.classForName(namespace));
     }
 
 }

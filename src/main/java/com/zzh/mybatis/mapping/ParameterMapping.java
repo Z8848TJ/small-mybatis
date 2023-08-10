@@ -1,7 +1,9 @@
 package com.zzh.mybatis.mapping;
 
-import cn.hutool.db.meta.JdbcType;
 import com.zzh.mybatis.session.Configuration;
+import com.zzh.mybatis.type.JdbcType;
+import com.zzh.mybatis.type.TypeHandler;
+import com.zzh.mybatis.type.TypeHandlerRegistry;
 
 /**
  * @author: zzh
@@ -20,15 +22,22 @@ public class ParameterMapping {
     // jdbcType=NUMERIC
     private JdbcType jdbcType;
 
+    private TypeHandler<?> typeHandler;
+
     private ParameterMapping() {}
+
+    public TypeHandler getTypeHandler() {
+        return typeHandler;
+    }
 
     public static class Builder {
 
         private ParameterMapping parameterMapping = new ParameterMapping();
 
-        public Builder(Configuration configuration, String property) {
+        public Builder(Configuration configuration, String property, Class<?> javaType) {
             parameterMapping.configuration = configuration;
             parameterMapping.property = property;
+            parameterMapping.javaType = javaType;
         }
 
         public Builder javaType(Class<?> javaType) {
@@ -39,6 +48,16 @@ public class ParameterMapping {
         public Builder jdbcType(JdbcType jdbcType) {
             parameterMapping.jdbcType = jdbcType;
             return this;
+        }
+
+        public ParameterMapping build() {
+            if (parameterMapping.typeHandler == null && parameterMapping.javaType != null) {
+                Configuration configuration = parameterMapping.configuration;
+                TypeHandlerRegistry typeHandlerRegistry = configuration.getTypeHandlerRegistry();
+                parameterMapping.typeHandler = typeHandlerRegistry.getTypeHandler(parameterMapping.javaType, parameterMapping.jdbcType);
+            }
+
+            return parameterMapping;
         }
 
     }
